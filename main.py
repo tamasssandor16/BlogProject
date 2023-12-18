@@ -9,15 +9,15 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+import os
 
 # SERVER SETUP
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
 # FLASK LOGIN
-# TODO: Configure Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -28,7 +28,7 @@ def load_user(user_id):
 
 
 # CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI")
 db = SQLAlchemy()
 db.init_app(app)
 
@@ -73,7 +73,6 @@ class BlogPost(db.Model):
     comments = relationship("Comment", back_populates="parent_post")
 
 
-# TODO: Create a User table for all your registered users.
 class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
@@ -104,7 +103,6 @@ with app.app_context():
 
 
 # SERVER ROUTES
-# TODO: Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET", "POST"])
 def register():
     register_form = RegisterForm()
@@ -138,7 +136,6 @@ def register():
     return render_template("register.html", form=register_form, logged_in=current_user.is_authenticated)
 
 
-# TODO: Retrieve a user from the database based on their email.
 @app.route('/login', methods=["GET", "POST"])
 def login():
     login_form = LoginForm()
@@ -174,7 +171,6 @@ def get_all_posts():
     return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated)
 
 
-# TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def show_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
@@ -191,12 +187,11 @@ def show_post(post_id):
         else:
             flash("You have to login or register to comment.")
             return redirect(url_for("login"))
-        
+    
     return render_template("post.html", post=requested_post, logged_in=current_user.is_authenticated, form=comment_form,
                            comments=requested_post.comments)
 
 
-# TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
 def add_new_post():
@@ -216,7 +211,6 @@ def add_new_post():
     return render_template("make-post.html", form=form, logged_in=current_user.is_authenticated)
 
 
-# TODO: Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @admin_only
 def edit_post(post_id):
@@ -239,7 +233,6 @@ def edit_post(post_id):
     return render_template("make-post.html", form=edit_form, is_edit=True, logged_in=current_user.is_authenticated)
 
 
-# TODO: Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
@@ -260,4 +253,4 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(debug=False)

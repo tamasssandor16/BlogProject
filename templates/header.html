@@ -8,7 +8,7 @@
     />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Angela's Blog</title>
+    <title>Tom's Blog</title>
     {% block styles %}
     <!-- Load Bootstrap-Flask CSS here -->
     {{ bootstrap.load_css() }}
@@ -66,7 +66,6 @@
                 >Home</a
               >
             </li>
-            <!-- TODO: Only show Login/Register if user is logged out. Otherwise show "Log Out" -->
             {% if not logged_in %}
               <li class="nav-item">
                 <a
